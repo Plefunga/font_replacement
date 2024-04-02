@@ -20,11 +20,7 @@
 using namespace cv;
 using namespace cv::dnn;
 
-// font size fixer
-#define FONT_SCALE_MODIFIER 1.7
 
-// box width fixer
-#define BOX_WIDTH_OFFSET -10
 
 class Frame
 {
@@ -57,9 +53,9 @@ void fourPointsTransform(const Mat& frame, const Point2f vertices[], Mat& result
  * @see https://stackoverflow.com/questions/50353884/calculate-text-size
 */
 #ifdef USE_FREETYPE_FONT
-void drawtorect(Mat & mat, Rect target, Ptr<freetype::FreeType2> font, int thickness, Scalar colour, const std::string & str);
+void drawtorect(Mat & mat, Rect target, int center_y, Ptr<freetype::FreeType2> font, Scalar colour, const std::string & str);
 #else
-void drawtorect(Mat& mat, Rect target, int thickness, Scalar colour, const std::string& str);
+void drawtorect(Mat & mat, Rect target, int center_y, int thickness, Scalar colour, const std::string & str);
 #endif
 
 #endif

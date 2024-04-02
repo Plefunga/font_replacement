@@ -1,8 +1,9 @@
 #include "textbox.h"
-//#include "coordinate.h"
 #include "colour.h"
 #include <string>
 #include <cmath>
+#include <opencv2/imgproc.hpp>
+#include "config.h"
 
 #include <opencv2/core/types.hpp>
 #include <vector>
@@ -10,13 +11,15 @@
 using namespace cv;
 
 
-Textbox::Textbox(std::vector<Point> points, std::string text)
+Textbox::Textbox(std::vector<Point> points, std::string text, Config* config)
 {
     // extract the points out
     this->top_left = points[TOP_LEFT_INDEX];
     this->top_right = points[TOP_RIGHT_INDEX];
     this->bottom_left = points[BOTTOM_LEFT_INDEX];
     this->bottom_right = points[BOTTOM_RIGHT_INDEX];
+
+    
 
     // text
     this->text = text;
@@ -27,6 +30,11 @@ Textbox::Textbox(std::vector<Point> points, std::string text)
 
     // calculate center of box
     this->center = midpoint(this->mid_left, this->mid_right);
+
+    // rank text
+    int rank_height = ceil(config->height / N_HEIGHTS);
+    this->v_rank = round(this->center.y / (double)rank_height) * rank_height;
+    this->rank = this->v_rank * config->width + this->center.x;
 
     // calculate some more stuff
     this->box_width = abs(this->mid_left.x - this->mid_right.x);
@@ -70,62 +78,12 @@ void Textbox::scale(double scale_factor)
     this->bottom_right = this->bottom_right * scale_factor;
 }
 
-/////////////////////////// OLD CONSTRUCTORS ///////////////////////////////////
-/*
-Textbox::Textbox(Coordinate topleft, Coordinate topright, Coordinate bottomleft, Coordinate bottomright)
+std::string Textbox::to_string()
 {
-    this->topleft = topleft;
-    this->topright = topright;
-    this->bottomleft = bottomleft;
-    this->bottomright = bottomright;
+    return "\"" + this->text + "\" [" + std::to_string(this->center.x) + ", " + std::to_string(this->center.y) + "] v_rank: " + std::to_string(this->v_rank);
 }
 
-Textbox::Textbox(Coordinate topleft, Coordinate topright, Coordinate bottomleft, Coordinate bottomright, std::string text)
+bool compare_textbox(Textbox t1, Textbox t2)
 {
-    this->topleft = topleft;
-    this->topright = topright;
-    this->bottomleft = bottomleft;
-    this->bottomright = bottomright;
-
-    this->text = text;
+    return (t1.rank < t2.rank);
 }
-Textbox::Textbox(Coordinate topleft, Coordinate topright, Coordinate bottomleft, Coordinate bottomright, std::string text, Colour colour)
-{
-    this->topleft = topleft;
-    this->topright = topright;
-    this->bottomleft = bottomleft;
-    this->bottomright = bottomright;
-
-    this->text = text;
-    this->colour = colour; // maybe convert to greyscale?
-}
-
-
-///////////////////// OLD GETTERS ///////////////////////////////
-
-Coordinate Textbox::get_top_left()
-{
-    return this->topleft;
-}
-Coordinate Textbox::get_top_right()
-{
-    return this->topright;
-}
-Coordinate Textbox::get_bottom_left()
-{
-    return this->bottomleft;
-}
-Coordinate Textbox::get_bottom_right()
-{
-    return this->bottomright;
-}
-
-std::string Textbox::get_text()
-{
-    return this->text;
-}
-
-Colour Textbox::get_colour()
-{
-    return this->colour;
-}*/

@@ -19,6 +19,7 @@ include_directories(config)
 add_library(textbox STATIC src/textbox.cpp lib/textbox.h)
 target_link_libraries(textbox ${OpenCV_LIBS})
 target_link_libraries(textbox colour)
+target_link_libraries(textbox config)
 include_directories(textbox)
 
 add_library(frame STATIC src/frame.cpp lib/frame.h)

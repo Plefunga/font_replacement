@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     // Parse command line arguments.
     CommandLineParser parser(argc, argv, keys);
     parser.about("Changes font from video (or still) input to OpenDyslexic-Regular");
-    if (argc == 1 || parser.has("help"))
+    if (parser.has("help"))
     {
         parser.printMessage();
         return 0;
@@ -39,7 +39,22 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    // set input
+    auto input = parser.has("input") ? parser.get<String>("input") : 0;
+
+    // Open a video file or an image file or a camera stream.
+    VideoCapture cap;
+    bool openSuccess = cap.open(input);
+    CV_Assert(openSuccess);
+
     Config config = Config("config.ini");
+
+    // get size
+    int width = cap.get(CAP_PROP_FRAME_WIDTH);
+    int height = cap.get(CAP_PROP_FRAME_HEIGHT);
+
+    // set size
+    config.set_size(width, height);
 
 #ifdef USE_FREETYPE_FONT
     // load fonts
@@ -73,24 +88,7 @@ int main(int argc, char** argv)
     // Parameters for Detection
     detector.setInputParams(config.det_scale, config.det_input_size, config.det_mean, config.swap_RB);
 
-    std::string input = "";
-
-    if (parser.has("input"))
-    {
-        input = parser.get<String>("input");
-    }
-    else
-    {
-        input = "0";
-    }
-
-    // temp
-    config.input = input;
-
-    // Open a video file or an image file or a camera stream.
-    VideoCapture cap;
-    bool openSuccess = cap.open(config.input);
-    CV_Assert(openSuccess);
+    
 
     Mat frame;
     while (waitKey(1) < 0)

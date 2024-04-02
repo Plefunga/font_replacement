@@ -18,14 +18,13 @@ Config::Config(std::string config_file_path)
     this->kWinName = ft.GetSection("Window Settings")->GetValue("window_name","Text replacement").AsString();
 
     // Downsample Settings
-    double downsample_scale = ft.GetSection("Downsample Settings")->GetValue("downsample_scale", 1).AsDouble();
+    this->downsample_scale = ft.GetSection("Downsample Settings")->GetValue("downsample_scale", 1).AsDouble();
 
     // Input Settings
     // calculate the width and height, rounding to 32
-    this->width = 32 * floor((double)ft.GetSection("Input Settings")->GetValue("width", 1920).AsInt() / (downsample_scale * 32.0));
-    this->height = 32 * floor((double)ft.GetSection("Input Settings")->GetValue("height", 1200).AsInt() / (downsample_scale * 32.0));
-
-    std::cout << width << " x " << height << "\n";
+    this->set_size(ft.GetSection("Input Settings")->GetValue("width", 1920).AsInt(), ft.GetSection("Input Settings")->GetValue("height", 1200).AsInt());
+    //this->width = 32 * floor((double)ft.GetSection("Input Settings")->GetValue("width", 1920).AsInt() / (this->downsample_scale * 32.0));
+    //this->height = 32 * floor((double)ft.GetSection("Input Settings")->GetValue("height", 1200).AsInt() / (this->downsample_scale * 32.0));
     
     this->imread_RGB = ft.GetSection("Input Settings")->GetValue("imread_RGB", 1).AsInt();
 
@@ -60,4 +59,15 @@ Config::Config(std::string config_file_path)
     this->det_mean = Scalar(det_mean_0, det_mean_1, det_mean_2);
 
     this->swap_RB =  ft.GetSection("Model Settings")->GetValue("swap_RB", 1).AsInt() == 1 ? true : false;
+}
+
+void Config::set_size(int width, int height)
+{
+    this->width = 32 * floor((double)width / (downsample_scale * 32.0));
+    this->height = 32 * floor((double)height / (downsample_scale * 32.0));
+    this->det_input_size = Size(this->width, this->height);
+
+#ifdef DEBUG
+    std::cout << width << " x " << height << "\n";
+#endif
 }
