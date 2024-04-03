@@ -19,42 +19,59 @@ sudo make install
 ```
 This should install opencv and opencv-contrib, as well as whatever else is required.
 
-Next, you 
+## Compile
+All you should need to do is
+```bash
+git clone https://github.com/Plefunga/font_replacement.git
+cd font_replacement
+cmake .
+make
+```
 
+## Run
+To do it from the camera:
+`./fontreplacement`
+You can select which camera by changing `camera_index` in `config.ini`.
 
+To use a video or stream:
+`./fontreplacement -i=/path/to/some/video.mp4`
 
-
-
-
-
-
-
-
-
-
-
+It can also take still images.
 
 # Windows
+## Install packages
+You will need to have Visual Studio with c++ installed.
+
+Do<br />
 https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-msbuild?pivots=shell-cmd
 
-but your installing opencv.
+However, use this as `vcpkg.json`:
+```
+{
+  "dependencies": [
+    "opencv",
+    {
+      "name": "opencv",
+      "default-features": true,
+      "features": [
+        "contrib","default-features","eigen","ffmpeg","freetype","ipp","jpeg","lapack","opengl","png","tbb","tiff","vulkan","webp"
+      ]
+    }
+    
+  ]
+}
+```
 
-That should do it
-To add files, get all files from src and lib and take them out and put them in the root project dir.
+To add files in visual studio, get all files from src and lib and take them out and put them in the root project dir.
 Then right click on the header files, and add existing item, and add all the header (and hpp) files.
 
 Do likewise with the source files.
 
-```bash
-.\vcpkg install opencv[core,jpeg,png,webp,quirc,default-features,dnn,ffmpeg,freetype,ipp,tbb,tiff] --featurepackages
-```
-
-Quick note: it would be interesting to add Vulcan support for dnn. However, I haven't tried this yet, and have also not tested this yet as at the time of writing, xz has a massive security vulnerability that means that doing the above doesn't work as it fails to find xz 5.4.4 (which does not have the vulnerability, and is in pretty much all linux distros.)
-
-I may need to do this:
+At the time of writing, there is a vulnerability in xz, meaning that the github repo is down. THis means that the installation fails, and you will need to do the things in this to the `portfile.cmake` that it is using:
 https://github.com/microsoft/vcpkg/issues/37839#issuecomment-2028011285
+except with `xz-mirror` as the mirror that is listed in the commend is also not available.
 
-In a nutshell, modify `vcpkg\ports\liblzma\portfile.cmake` to be 
+If that makes no sense, start compiling the code, and it will take forever, but it will also fail to compile liblzma. Take note of the portfile.cmake that it is using, and edit it to be
 ```cmake
 # old one that is currently down due to backdoor
 #vcpkg_from_github(
@@ -158,74 +175,18 @@ file(COPY "${CMAKE_CURRENT_LIST_DIR}/vcpkg-cmake-wrapper.cmake" DESTINATION "${C
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYING")
 ```
-However, I found that when I tried to compile my project, it didn't use my installed opencv. When I tried to build it, I had to modify the vcpkg.json to this:
-```
-{
-  "dependencies": [
-    "opencv",
-    {
-      "name": "opencv",
-      "default-features": true,
-      "features": [
-        "contrib","default-features","eigen","ffmpeg","freetype","ipp","jpeg","lapack","opengl","png","tbb","tiff","vulkan","webp"
-      ]
-    }
-    
-  ]
-}
-```
 
-and when it tries to install, it would fail on liblzma due to backdoor thing, and I had to do the above modification to the cached portfile.cmake, which I found the path to in the output. After that, it decided to completely rebuild it.
+## Building
+I find that the debug configuration is very slow, and so I don't use it. When you have compiled it, you will need to copy and paste either the .exe and .dll files out of `x64/Release` or `x64/Debug` (depending on which configuration you built), and place them into the same directory that has `config.ini`. Either that, or you can put config.ini and the resources folder into the Debug or Release folder.<br />
 
-If this doesn't work, I am going to make it a cmake project.
+In a nutshell, you need to have `resources` and `config.ini` in the same folder as `fontreplacement.exe` and all of the `.dll`s.
 
-Also note, I included vulkan and opengl in the above json file. This is a bit of an experiment, to make it do the dnn bits quicker on all platforms. However, at the moment it appears that Nvidia has just wrapped vulkan in opengl, so I don't expect huge benefits from using it on nvidia based systems.
+## Run
+To do it from the camera:
+`fontreplacement` (or double click on the exe)
+You can select which camera by changing `camera_index` in `config.ini`.
 
-# DONT DO THE FOLLOWING - THIS IS JUST A RECORD OF MY PREVIOUS ATTEMPTS
+To use a video or stream:
+`fontreplacement -i=/path/to/some/video.mp4`
 
-Follow the guides at
-a) https://github.com/roxlu/cmake-freetype-harfbuzz
-b) https://gist.github.com/demid5111/6faa590e4fc5813550dd95cc1c538893
-
-Note: there are a few unclear steps. You will be building from source, and for the most part, the guide is very clear.
-
-When installing the harfbuzz and freetype:
-- you will need to make a toolchain file like this
-```cmake
-SET(FREETYPE_FOUND 1)
-SET(FREETYPE_LIBRARIES C:\\freetype-harfbuzz\\freetype\\lib)
-SET(FREETYPE_INCLUDE_DIRS C:\\freetype-harfbuzz\\freetype\\include)
-SET(HARFBUZZ_FOUND 1)
-SET(HARFBUZZ_LIBRARIES C:\\freetype-harfbuzz\\harfbuzz\\lib\\harfbuzz)
-SET(HARFBUZZ_INCLUDE_DIRS C:\\freetype-harfbuzz\\harfbuzz\\include)
-```
-as it does not do it by itself.
-In this case, I have taken the useful files out and put them into a directory. I may eventually create a link to this directory so you don't even need to build them.
-
-For now, the build is failing for freetype in the linking step. I'll get to this later. For now, just untick the option to use freetype, and comment out the USE_FREETYPE macro in config.h
-
-
-In the second one:
-- when specifying `OPENCV_EXTRA_MODULES_PATH`, you need to do include "/modules/" at the end, or it won't work.
-- You will need to link the toolchain file. This is doen with the radio selector in the initial configuration in cmake gui, and you select the one that allows you to specify a toolchain file (it also does say for cross compilation, which is fine.)
-- when doing `BUILD_ALL` and `INSTALL` bits, have a random folder selected in the sidebar on the right, and go to build->build->BUILD_ALL and likewise with INSTALL.
-- remember to actually restart after doing the steps with path.
-- There are 'd's after each dll in the example. This is because they compiled a debug version. If you want to, you can do that, but otherwise just get rid of them
-- I need to figure out why the linking is not working. It can't actually find the libs.
-
-
-
-
-
-
-
-
-
-
-https://sourceforge.net/projects/opencvlibrary/files/
-get latest windows (I used 4.9.0)
-
-extract into C:\opencv
-
-run:
-setx OpenCV_DIR C:\opencv\build\x64\vc16
+It can also take still images.

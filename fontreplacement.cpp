@@ -39,15 +39,26 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    // set input
-    auto input = parser.has("input") ? parser.get<String>("input") : 0;
+    Config config = Config("config.ini");
 
     // Open a video file or an image file or a camera stream.
     VideoCapture cap;
-    bool openSuccess = cap.open(input);
-    CV_Assert(openSuccess);
+    bool openSuccess = false;
 
-    Config config = Config("config.ini");
+    // set input
+    if (parser.has("input"))
+    {
+        openSuccess = cap.open(parser.get<String>("input"));
+    }
+    else
+    {
+        openSuccess = cap.open(config.camera_index);
+        cap.set(CAP_PROP_FRAME_WIDTH, config.i_width);
+        cap.set(CAP_PROP_FRAME_HEIGHT, config.i_height);
+    }
+    //auto input = parser.has("input") ? parser.get<String>("input") : 0;
+
+    CV_Assert(openSuccess);
 
     // get size
     int width = cap.get(CAP_PROP_FRAME_WIDTH);

@@ -270,9 +270,9 @@ void drawtorect(Mat & mat, Rect target, int center_y, int thickness, Scalar colo
 
     //int marginx = scale == scalex ? 0 : (int)((double)target.width * (scalex - scale) / scalex * 0.5);
     //int marginy = scale == scaley ? 0 : (int)((double)target.height * (scaley - scale) / scaley * 0.5);
-    putText(mat, str, Point(target.x, center_y - rect.height/2), FONT_HERSHEY_COMPLEX, scale, colour, thickness, LINE_8, false);
+    putText(mat, str, Point(target.x, center_y + rect.height/2), FONT_HERSHEY_COMPLEX, scale, colour, thickness, LINE_8, false);
 #ifdef DEBUG
-    rectangle(mat, Point(target.x, center_y + rect.height/2), Point(target.x + rect.width, center_y + rect.height/2 - rect.height), Scalar(0,255,255), 2);
+    rectangle(mat, Point(target.x, center_y + rect.height/2), Point(target.x + rect.width, center_y - rect.height/2), Scalar(0,255,255), 2);
 #endif
 }
 #endif

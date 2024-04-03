@@ -22,11 +22,12 @@ Config::Config(std::string config_file_path)
 
     // Input Settings
     // calculate the width and height, rounding to 32
-    this->set_size(ft.GetSection("Input Settings")->GetValue("width", 1920).AsInt(), ft.GetSection("Input Settings")->GetValue("height", 1200).AsInt());
-    //this->width = 32 * floor((double)ft.GetSection("Input Settings")->GetValue("width", 1920).AsInt() / (this->downsample_scale * 32.0));
-    //this->height = 32 * floor((double)ft.GetSection("Input Settings")->GetValue("height", 1200).AsInt() / (this->downsample_scale * 32.0));
+    this->i_width = ft.GetSection("Input Settings")->GetValue("width", 1280).AsInt();
+    this->i_height = ft.GetSection("Input Settings")->GetValue("height", 720).AsInt();
+    this->set_size(this->i_width, this->i_height);
     
     this->imread_RGB = ft.GetSection("Input Settings")->GetValue("imread_RGB", 1).AsInt();
+    this->camera_index = ft.GetSection("Input Settings")->GetValue("camera_index", 0).AsInt();
 
     // Paths
     this->detector_model_path = ft.GetSection("Paths")->GetValue("detector_model_path","resources/frozen_east_text_detection.pb").AsString();

@@ -42,6 +42,9 @@ class Config
     int width;
     int height;
     double downsample_scale;
+    int camera_index;
+    int i_width;
+    int i_height;
 
     double rec_scale;
     Scalar rec_mean;
